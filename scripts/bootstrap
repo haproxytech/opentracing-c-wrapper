@@ -1,0 +1,12 @@
+#!/bin/sh -x
+#
+# bootstrap by Miroslav Zagorac <mzagorac@haproxy.com>
+#
+mkdir -p config
+libtoolize
+aclocal -I m4
+autoheader
+automake --add-missing --copy
+autoconf
+
+rm -rf autom4te.cache

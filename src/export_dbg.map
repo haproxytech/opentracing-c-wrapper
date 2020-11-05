@@ -1,0 +1,26 @@
+{
+global:
+	otc_tracer_init;
+	otc_tracer_global;
+	otc_tracer_init_global;
+	otc_text_map_new;
+	otc_text_map_add;
+	otc_text_map_destroy;
+	otc_binary_data_new;
+	otc_binary_data_destroy;
+	otc_ext_init;
+	otc_statistics;
+
+	otc_dbg_calloc;
+	otc_dbg_free;
+	otc_dbg_malloc;
+	otc_dbg_mem_disable;
+	otc_dbg_mem_info;
+	otc_dbg_mem_init;
+	otc_dbg_memdup;
+	otc_dbg_realloc;
+	otc_dbg_strdup;
+	otc_dbg_strndup;
+
+local:	*;
+};

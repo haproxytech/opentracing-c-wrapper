@@ -1,0 +1,15 @@
+{
+global:
+	otc_tracer_init;
+	otc_tracer_global;
+	otc_tracer_init_global;
+	otc_text_map_new;
+	otc_text_map_add;
+	otc_text_map_destroy;
+	otc_binary_data_new;
+	otc_binary_data_destroy;
+	otc_ext_init;
+	otc_statistics;
+
+local:	*;
+};

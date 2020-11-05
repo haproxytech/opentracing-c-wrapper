@@ -1,0 +1,19 @@
+#ifndef _OPENTRACING_C_WRAPPER_VERSION_H_
+#define _OPENTRACING_C_WRAPPER_VERSION_H_
+
+#define PACKAGE_AUTHOR              "Miroslav Zagorac <mzagorac@haproxy.com>"
+#define PACKAGE_CPP_FLAGS           "@CPPFLAGS@"
+#define PACKAGE_DEFS                "@DEFS@"
+#define PACKAGE_C_FLAGS             "@CFLAGS@"
+#define PACKAGE_CONFIGURE_OPTIONS   "@CONFIGURE_OPTIONS@"
+
+#endif /* _OPENTRACING_C_WRAPPER_VERSION_H_ */
+
+/*
+ * Local variables:
+ *  c-indent-level: 8
+ *  c-basic-offset: 8
+ * End:
+ *
+ * vi: noexpandtab shiftwidth=8 tabstop=8
+ */

@@ -1,0 +1,4 @@
+{
+    "service_name":   "opentracing-c-wrapper-test",
+    "collector_host": "localhost"
+}

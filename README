@@ -1,0 +1,276 @@
+         -------------------------------------------------------------
+          C wrapper for the C++ implementation of the OpenTracing API
+         -------------------------------------------------------------
+
+
+Summary
+------------------------------------------------------------------------
+
+  1. Introduction
+  2. Build instructions
+  3. Testing the operation of the library
+  4. Basic concepts in the OpenTracing
+  5. Tracing example
+  6. Known bugs and limitations
+
+
+1. Introduction
+------------------------------------------------------------------------
+
+OpenTracing C Wrapper library was created due to the need to use distributed
+tracing within C programs.
+
+The OpenTracing project (https://opentracing.io/) has published a
+C-language implementation on https://github.com/opentracing/opentracing-c
+but that implementation is incomplete, with the last update on Jun
+27th 2018
+
+This library takes inspiration from the header files in that project but
+implements the proposed functionality fully by wrapping the functional
+C++ library.
+
+
+2. Build instructions
+------------------------------------------------------------------------
+
+Prerequisites for configuring and compiling the OpenTracing C Wrapper:
+----------------------------------------------------------------------
+
+  * GNU GCC Compiler and Development Environment
+    The main components of this system are C standard library, C and C++
+    compilers, make and cmake utilities and other development tools that are
+    not explicitly listed because they depend on the system on which we want
+    to compile the OpenTracing C Wrapper.
+
+    The program itself is very likely possible to compile with another C
+    compiler (non-GCC), but I'm not sure about the other required libraries.
+
+    On debian-like linux systems it is necessary to run the following, in
+    order to install development packages:
+
+    # apt-get install automake autoconf make cmake libc6-dev gcc g++ binutils libtool pkgconf gawk git
+
+  * GNU autoconf
+    https://www.gnu.org/software/autoconf/
+
+  * GNU automake
+    https://www.gnu.org/software/automake/
+
+  * POSIX threads library
+
+  * C++ implementation of the OpenTracing API http://opentracing.io
+    https://github.com/opentracing/opentracing-cpp
+
+  * the tracing plugins (one of the following may be used):
+    * Jaeger SDK with OpenTracing API for C++ binding
+      https://github.com/jaegertracing/jaeger-client-cpp
+
+    * the LightStep distributed tracing library for C++
+      https://github.com/lightstep/lightstep-tracer-cpp
+
+    * OpenTracing implementation for Zipkin in C++
+      https://github.com/rnburn/zipkin-cpp-opentracing
+
+    * Datadog OpenTracing C++ Client
+      https://github.com/DataDog/dd-opentracing-cpp
+
+
+Note: prompt '%' indicates that the command is executed under a unprivileged
+      user, while prompt '#' indicates that the command is executed under the
+      root user.
+
+
+Compiling and installing the opentracing-cpp library:
+-----------------------------------------------------
+
+  The assumption is that we want to install the library in the /opt directory.
+
+  % wget https://github.com/opentracing/opentracing-cpp/archive/v1.5.0.tar.gz
+  % tar xf v1.5.0.tar.gz
+  % cd opentracing-cpp-1.5.0
+  % mkdir build
+  % cd build
+  % cmake -DCMAKE_INSTALL_PREFIX=/opt ..
+  % make
+  # make install
+
+  Of course, we can take another version of the library (or download the master
+  branch via git).  For example, this version is used here due to compatibility
+  with the Jaeger plugin, which I mostly used when testing the operation of the
+  program.
+
+
+Compiling and installing the opentracing-c-wrapper library:
+-----------------------------------------------------------
+
+  We will also install this library in the /opt directory, and when configuring
+  the library we must specify where the opentracing-cpp library is located.
+
+  In this example we will install two builds of the library, first the
+  release version and then the debug version.
+
+  % git clone https://github.com/haproxytech/opentracing-c-wrapper.git
+  % cd opentracing-c-wrapper
+  % ./scripts/bootstrap
+  % ./configure --prefix=/opt --with-opentracing=/opt
+  % make
+  # make install
+
+  % ./scripts/distclean
+  % ./scripts/bootstrap
+  % ./configure --prefix=/opt --enable-debug --with-opentracing=/opt
+  % make
+  # make install
+
+
+Compiling the Jaeger tracing plugin:
+------------------------------------
+
+  We will use the 1.5.0 version of the plugin, a newer one can be taken (or
+  the git master branch) if you want to try it (as is the case with previous
+  libraries, you can try a newer version).
+
+  Important note: the GCC version must be at least 4.9 or later.
+
+  % wget https://github.com/jaegertracing/jaeger-client-cpp/archive/v0.5.0.tar.gz
+  % tar xf v0.5.0.tar.gz
+  % cd jaeger-client-cpp-0.5.0
+  % mkdir build
+  % cd build
+  % cmake -DCMAKE_INSTALL_PREFIX=/opt -DJAEGERTRACING_PLUGIN=ON -DHUNTER_CONFIGURATION_TYPES=Release -DHUNTER_BUILD_SHARED_LIBS=OFF ..
+  % make
+
+  After the plugin is compiled, it will be in the current directory.
+  The name of the plugin is libjaegertracing_plugin.so.
+
+  Of course, we can download the precompiled version of the Jaeger plugin
+  (unfortunately, the latest version that can be downloaded is 0.4.2).
+
+  % wget https://github.com/jaegertracing/jaeger-client-cpp/releases/download/v0.4.2/libjaegertracing_plugin.linux_amd64.so
+
+
+3. Testing the operation of the library
+------------------------------------------------------------------------
+
+Testing of the library can be done through the test program, which is located
+in the eponymous directory 'test'.  In this directory there is also a script
+with which we can download opentracing plugins from all supported tracers.
+As a script argument we can specify the directory to which the plugins are
+downloaded.  If we do not specify this argument then the download is done to
+the current directory.  In our example we will place the downloaded plugins
+in the 'test' directory:
+
+  % ./test/get-opentracing-plugins.sh test
+
+The options supported by the test program can be found using the '-h' option:
+
+  % ./test/ot-c-wrapper-test_dbg -h
+
+--- help output -------
+Usage: ot-c-wrapper-test_dbg { -h --help }
+       ot-c-wrapper-test_dbg { -V --version }
+       ot-c-wrapper-test_dbg { [ -R --runcount=VALUE ] | [ -r --runtime=TIME ] } [OPTION]...
+
+Options are:
+  -c, --config=FILE     Specify the configuration for the used tracer.
+  -d, --debug=LEVEL     Enable and specify the debug mode level (default: 0).
+  -h, --help            Show this text.
+  -p, --plugin=FILE     Specify the OpenTracing compatible plugin library.
+  -R, --runcount=VALUE  Execute this program a certain number of passes (0 = unlimited).
+  -r, --runtime=TIME    Run this program for a certain amount of time (ms, 0 = unlimited).
+  -t, --threads=VALUE   Specify the number of threads (default: 1000).
+  -V, --version         Show program version.
+
+Copyright 2020 HAProxy Technologies
+SPDX-License-Identifier: Apache-2.0
+--- help output -------
+
+In case we did not use the '--enable-debug' option when configuring the
+library, the test program will be named ot-c-wrapper-test.
+
+
+Example of using the test program:
+
+  % ./test/ot-c-wrapper-test -r 10000 -c test/cfg-jaeger.yml -p test/libjaeger_opentracing_plugin-0.4.2.so
+
+'-r' is the option that must be specified when launching a program.  It is
+used to prevent the test program from starting unnecessarily when testing the
+program options, or printing the test program help.  In addition, with this
+option, the test program runtime is set.  If the time is set to 0, the test
+program runtime is unlimited.  In the example above, the runtime is set to
+10 seconds.
+
+With the '-c' option, we specify the configuration of the used tracer (in this
+case it is Jeager); while the '-p' option selects the plugin library that the
+selected tracer uses.
+
+
+The test directory contains several configurations prepared for supported
+tracers:
+  - cfg-dd.json     - Datadog tracer
+  - cfg-jaeger.yml  - Jaeger tracer
+  - cfg-zipkin.json - Zipkin tracer
+
+
+Jaeger docker image installation:
+---------------------------------
+
+  Installation instructions can be found on the website
+  https://www.jaegertracing.io/download/.  For the impatient, here we will list
+  how the image to test the operation of the tracer system can be installed
+  without much reading of the documentation.
+
+  # docker pull jaegertracing/all-in-one:latest
+  # docker run -d --name jaeger -e COLLECTOR_ZIPKIN_HTTP_PORT=9411 -p 5775:5775/udp -p 6831:6831/udp -p 6832:6832/udp -p 5778:5778 -p 16686:16686 -p 14268:14268 -p 9411:9411 jaegertracing/all-in-one:latest
+
+  The last command will also initialize and run the Jaeger container.
+  If we want to use that container later, it can be started and stopped
+  in the classic way, using the 'docker container start/stop' commands.
+
+
+4. Basic concepts in the OpenTracing
+------------------------------------------------------------------------
+
+Basic concepts of the OpenTracing can be read on the OpenTracing documentation
+website https://opentracing.io/docs/overview/.
+
+Here we will list only the most important elements of distributed tracing and
+these are 'trace', 'span' and 'span context'.  Trace is a description of the
+complete transaction we want to record in the tracing system.  A span is an
+operation that represents a unit of work that is recorded in a tracing system.
+Span context is a group of information related to a particular span that is
+passed on to the system (from service to service).  Using this context, we can
+add new spans to already open trace (or supplement data in already open spans).
+
+An individual span may contain one or more tags, logs and baggage items.
+The tag is a key-value element that is valid for the entire span.  Log is a
+key-value element that allows you to write some data at a certain time, it
+can be used for debugging.  A baggage item is a key-value data pair that can
+be used for the duration of an entire trace, from the moment it is added to
+the span.
+
+
+5. Tracing example
+------------------------------------------------------------------------
+
+In the example, whose source is in the 'test' directory, the operation of the
+OpenTracing C Wrapper is checked.  5 spans are created in which tags, logs and
+baggage are placed; and data propagation via text map, http header and binary
+data is checked.
+
+root span |------------------------------------------------------------------|
+  span #1         |----------------------------------------------------------|
+    text map propagation  |--------------------------------------------------|
+      http headers propagation    |------------------------------------------|
+        binary data propagation           |----------------------------------|
+
+
+6. Known bugs and limitations
+------------------------------------------------------------------------
+
+The library does not know whether the data was sent to the tracer or not,
+because sending is done in a separate thread that does not affect the
+operation of the rest of the program.
+
+One should not exaggerate with the number of competing threads that send data
+to their tracers as this can slow down the sending of data to the tracer.
