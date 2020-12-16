@@ -69,8 +69,6 @@ dnl
 dnl Checks for library functions.
 dnl
 AC_FUNC_ERROR_AT_LINE
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
 AC_FUNC_STRERROR_R
 AC_CHECK_FUNCS([clock_gettime gettimeofday memmove memset strchr strdup strndup])
 
