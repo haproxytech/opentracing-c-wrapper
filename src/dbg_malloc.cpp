@@ -101,10 +101,14 @@ static void otc_dbg_mem_alloc(const char *func, int line, void *old_ptr, void *p
 	size_t i = 0;
 	int    rc;
 
-	otc_dbg_set_metadata(ptr, nullptr);
-
-	if (dbg_mem == nullptr)
+	if (dbg_mem == nullptr) {
 		return;
+	}
+	else if (ptr == nullptr) {
+		DBG_MEM_ERR("invalid memory address: %p", ptr);
+
+		return;
+	}
 
 	if ((rc = pthread_mutex_lock(&(dbg_mem->mutex))) != 0) {
 		DBG_MEM_ERR("cannot lock mutex: %s", otc_strerror(rc));
@@ -114,7 +118,7 @@ static void otc_dbg_mem_alloc(const char *func, int line, void *old_ptr, void *p
 
 	if (old_ptr != nullptr) {
 		/* Reallocating memory. */
-		struct otc_dbg_mem_metadata *metadata = DBG_MEM_DATA(old_ptr);
+		struct otc_dbg_mem_metadata *metadata = OT_CAST_TYPEOF(metadata, ptr);
 
 		if (metadata == nullptr) {
 			DBG_MEM_ERR("no metadata: MEM_REALLOC %s:%d(%p -> %p %zu)", func, line, old_ptr, DBG_MEM_PTR(ptr), size);
@@ -128,13 +132,15 @@ static void otc_dbg_mem_alloc(const char *func, int line, void *old_ptr, void *p
 		else if (metadata->magic != DBG_MEM_MAGIC) {
 			DBG_MEM_ERR("invalid magic: MEM_REALLOC %s:%d(%p -> %p %zu) 0x%016" PRIu64, func, line, old_ptr, DBG_MEM_PTR(ptr), size, metadata->magic);
 		}
-		else if (metadata->data->used && (metadata->data->ptr == metadata)) {
+		else if (metadata->data->used && (metadata->data->ptr == DBG_MEM_DATA(old_ptr))) {
 			DBG_MEM_INFO(1, "MEM_REALLOC: %s:%d(%p %zu -> %p %zu)", func, line, old_ptr, metadata->data->size, DBG_MEM_PTR(ptr), size);
 
 			dbg_mem->size -= metadata->data->size;
 			otc_dbg_mem_add(func, line, ptr, size, metadata->data, 1);
 		}
 	} else {
+		otc_dbg_set_metadata(ptr, nullptr);
+
 		/*
 		 * The first attempt is to find a location that has not been
 		 * used at all so far.  If such is not found, an attempt is
@@ -332,9 +338,27 @@ void *otc_dbg_realloc(const char *func, int line, void *ptr, size_t size)
 {
 	void *retptr;
 
-	retptr = realloc(ptr, DBG_MEM_SIZE(size));
+	if (ptr == nullptr) {
+		retptr = malloc(DBG_MEM_SIZE(size));
 
-	otc_dbg_mem_alloc(func, line, ptr, retptr, size);
+		otc_dbg_mem_alloc(func, line, nullptr, retptr, size);
+	} else {
+		struct otc_dbg_mem_metadata *metadata = DBG_MEM_DATA(ptr);
+
+		/*
+		 * If memory is not allocated via these debug functions, it
+		 * must not be reallocated via them either.
+		 */
+		if ((metadata == nullptr) || (metadata->data == nullptr) || (metadata->magic != DBG_MEM_MAGIC)) {
+			retptr = realloc(ptr, size);
+
+			return retptr;
+		} else {
+			retptr = realloc(DBG_MEM_DATA(ptr), DBG_MEM_SIZE(size));
+
+			otc_dbg_mem_alloc(func, line, ptr, retptr, size);
+		}
+	}
 
 	return DBG_MEM_RETURN(retptr);
 }
