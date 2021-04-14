@@ -133,21 +133,21 @@ int otc_text_map_add(struct otc_text_map *text_map, const char *key, size_t key_
 	if (text_map->count >= text_map->size) {
 		typeof(text_map->key)   ptr_key;
 		typeof(text_map->value) ptr_value;
+		size_t                  size_add = (text_map->size > 1) ? (text_map->size / 2) : 1;
 
-		if ((ptr_key = OT_CAST_TYPEOF(ptr_key, OTC_DBG_REALLOC(text_map->key, OT_TEXT_MAP_SIZE(key, 3 / 2)))) == nullptr)
+		if ((ptr_key = OT_CAST_TYPEOF(ptr_key, OTC_DBG_REALLOC(text_map->key, OT_TEXT_MAP_SIZE(key, size_add)))) == nullptr)
 			return retval;
 
 		text_map->key = ptr_key;
-		(void)memset(text_map->key + text_map->size, 0, OT_TEXT_MAP_SIZE(key, 1 / 2));
+		(void)memset(text_map->key + OT_TEXT_MAP_SIZE(key, 0), 0, sizeof(*(text_map->key)) * size_add);
 
-		if ((ptr_value = OT_CAST_TYPEOF(ptr_value, OTC_DBG_REALLOC(text_map->value, OT_TEXT_MAP_SIZE(value, 3 / 2)))) == nullptr)
+		if ((ptr_value = OT_CAST_TYPEOF(ptr_value, OTC_DBG_REALLOC(text_map->value, OT_TEXT_MAP_SIZE(value, size_add)))) == nullptr)
 			return retval;
 
 		text_map->value = ptr_value;
-		(void)memset(text_map->value + text_map->size, 0, OT_TEXT_MAP_SIZE(value, 1 / 2));
+		(void)memset(text_map->value + OT_TEXT_MAP_SIZE(value, 0), 0, sizeof(*(text_map->value)) * size_add);
 
-		/* Asignment operator '*=' should not be used here! */
-		text_map->size = text_map->size * 3 / 2;
+		text_map->size += size_add;
 	}
 
 	text_map->key[text_map->count]   = (flags & OTC_TEXT_MAP_DUP_KEY) ? ((key_len > 0) ? OTC_DBG_STRNDUP(key, key_len) : OTC_DBG_STRDUP(key)) : OT_CAST_CONST(char *, key);

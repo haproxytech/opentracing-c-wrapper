@@ -22,8 +22,8 @@
 #include <unistd.h>
 
 
-/* Parameter 'n' must not be in parentheses! */
-#define OT_TEXT_MAP_SIZE(p,n)   (sizeof(text_map->p) * text_map->size * n)
+/* Parameter 'p' must not be in parentheses! */
+#define OT_TEXT_MAP_SIZE(p,n)   (sizeof(text_map->p) * (text_map->size + (n)))
 
 
 extern otc_ext_malloc_t otc_ext_malloc;
