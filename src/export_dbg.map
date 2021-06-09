@@ -9,6 +9,7 @@ global:
 	otc_binary_data_new;
 	otc_binary_data_destroy;
 	otc_ext_init;
+	otc_file_read;
 	otc_statistics;
 
 	otc_dbg_calloc;
