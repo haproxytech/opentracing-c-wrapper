@@ -26,11 +26,9 @@ static std::shared_ptr<opentracing::Tracer>                            ot_tracer
  *
  * ARGUMENTS
  *   library   -
- *   config    -
  *   errbuf    -
  *   errbufsiz -
  *   handle    -
- *   tracer    -
  *
  * DESCRIPTION
  *   -
@@ -38,7 +36,7 @@ static std::shared_ptr<opentracing::Tracer>                            ot_tracer
  * RETURN VALUE
  *   -
  */
-static int ot_tracer_load(const char *library, const char *config, char *errbuf, int errbufsiz, opentracing::DynamicTracingLibraryHandle &handle, std::shared_ptr<opentracing::Tracer> &tracer)
+static int ot_tracer_load(const char *library, char *errbuf, int errbufsiz, opentracing::DynamicTracingLibraryHandle &handle)
 {
 	std::string errmsg;
 
@@ -50,9 +48,35 @@ static int ot_tracer_load(const char *library, const char *config, char *errbuf,
 		return -1;
 	}
 
-	auto &tracer_factory = handle_maybe->tracer_factory();
+	handle = std::move(*handle_maybe);
 
-	/* Create a tracer with the requested configuration. */
+	return 0;
+}
+
+
+/***
+ * NAME
+ *   ot_tracer_start -
+ *
+ * ARGUMENTS
+ *   config    -
+ *   errbuf    -
+ *   errbufsiz -
+ *   tracer    -
+ *
+ * DESCRIPTION
+ *   -
+ *
+ * RETURN VALUE
+ *   -
+ */
+static int ot_tracer_start(const char *config, char *errbuf, int errbufsiz, std::shared_ptr<opentracing::Tracer> &tracer)
+{
+	std::string errmsg;
+
+	auto &tracer_factory = ot_dynlib->tracer_factory();
+
+      /* Create a tracer with the requested configuration. */
 	auto tracer_maybe = tracer_factory.MakeTracer(config, errmsg);
 	if (!tracer_maybe) {
 		(void)snprintf(errbuf, errbufsiz, "Failed to construct tracer: %s", errmsg.empty() ? tracer_maybe.error().message().c_str() : errmsg.c_str());
@@ -60,7 +84,6 @@ static int ot_tracer_load(const char *library, const char *config, char *errbuf,
 		return -1;
 	}
 
-	handle = std::move(*handle_maybe);
 	tracer = std::move(*tracer_maybe);
 
 	return 0;
@@ -88,7 +111,8 @@ static void ot_tracer_close(struct otc_tracer *tracer)
 	if (ot_dynlib == nullptr)
 		return;
 
-	ot_tracer->Close();
+	if (ot_tracer != nullptr)
+		ot_tracer->Close();
 	tracer->destroy(&tracer);
 }
 
@@ -114,7 +138,9 @@ static struct otc_span *ot_tracer_start_span_with_options(struct otc_tracer *tra
 	std::unique_ptr<opentracing::Span>  span_maybe = nullptr;
 	struct otc_span            *retptr = nullptr;
 
-	if ((tracer == nullptr) || (operation_name == nullptr))
+	if (ot_tracer == nullptr)
+		return retptr;
+	else if ((tracer == nullptr) || (operation_name == nullptr))
 		return retptr;
 
 	/* Allocating memory for the span. */
@@ -247,7 +273,9 @@ static otc_propagation_error_code_t ot_tracer_inject_text_map(struct otc_tracer 
 	TextMapCarrier              text_map_carrier(text_map);
 	opentracing::expected<void> rc;
 
-	if ((tracer == nullptr) || (carrier == nullptr))
+	if (ot_tracer == nullptr)
+		return otc_propagation_error_code_invalid_tracer;
+	else if ((tracer == nullptr) || (carrier == nullptr))
 		return otc_propagation_error_code_invalid_carrier;
 	else if (!OT_CTX_IS_VALID(span_context))
 		return otc_propagation_error_code_span_context_corrupted;
@@ -304,7 +332,9 @@ static otc_propagation_error_code_t ot_tracer_inject_http_headers(struct otc_tra
 	HTTPHeadersCarrier          http_headers_carrier(text_map);
 	opentracing::expected<void> rc;
 
-	if ((tracer == nullptr) || (carrier == nullptr))
+	if (ot_tracer == nullptr)
+		return otc_propagation_error_code_invalid_tracer;
+	else if ((tracer == nullptr) || (carrier == nullptr))
 		return otc_propagation_error_code_invalid_carrier;
 	else if (!OT_CTX_IS_VALID(span_context))
 		return otc_propagation_error_code_span_context_corrupted;
@@ -360,7 +390,9 @@ static otc_propagation_error_code_t ot_tracer_inject_binary(struct otc_tracer *t
 	std::ostringstream          oss(std::ios::binary);
 	opentracing::expected<void> rc;
 
-	if ((tracer == nullptr) || (carrier == nullptr))
+	if (ot_tracer == nullptr)
+		return otc_propagation_error_code_invalid_tracer;
+	else if ((tracer == nullptr) || (carrier == nullptr))
 		return otc_propagation_error_code_invalid_carrier;
 	else if (!OT_CTX_IS_VALID(span_context))
 		return otc_propagation_error_code_span_context_corrupted;
@@ -488,7 +520,9 @@ static otc_propagation_error_code_t ot_tracer_extract_text_map(struct otc_tracer
 	TextMap        text_map;
 	TextMapCarrier text_map_carrier(text_map);
 
-	if ((tracer == nullptr) || (carrier == nullptr))
+	if (ot_tracer == nullptr)
+		return otc_propagation_error_code_invalid_tracer;
+	else if ((tracer == nullptr) || (carrier == nullptr))
 		return otc_propagation_error_code_invalid_carrier;
 	else if (span_context == nullptr)
 		return otc_propagation_error_code_invalid_span_context;
@@ -530,7 +564,9 @@ static otc_propagation_error_code_t ot_tracer_extract_http_headers(struct otc_tr
 	TextMap            text_map;
 	HTTPHeadersCarrier http_headers_carrier(text_map);
 
-	if ((tracer == nullptr) || (carrier == nullptr))
+	if (ot_tracer == nullptr)
+		return otc_propagation_error_code_invalid_tracer;
+	else if ((tracer == nullptr) || (carrier == nullptr))
 		return otc_propagation_error_code_invalid_carrier;
 	else if (span_context == nullptr)
 		return otc_propagation_error_code_invalid_span_context;
@@ -569,7 +605,9 @@ static otc_propagation_error_code_t ot_tracer_extract_http_headers(struct otc_tr
  */
 static otc_propagation_error_code_t ot_tracer_extract_binary(struct otc_tracer *tracer, const struct otc_custom_carrier_reader *carrier, struct otc_span_context **span_context)
 {
-	if ((tracer == nullptr) || (carrier == nullptr))
+	if (ot_tracer == nullptr)
+		return otc_propagation_error_code_invalid_tracer;
+	else if ((tracer == nullptr) || (carrier == nullptr))
 		return otc_propagation_error_code_invalid_carrier;
 	else if (span_context == nullptr)
 		return otc_propagation_error_code_invalid_span_context;
@@ -674,6 +712,88 @@ struct otc_tracer *ot_tracer_new(void)
 
 /***
  * NAME
+ *   otc_tracer_load -
+ *
+ * ARGUMENTS
+ *   library   -
+ *   errbuf    -
+ *   errbufsiz -
+ *
+ * DESCRIPTION
+ *   -
+ *
+ * RETURN VALUE
+ *   -
+ */
+struct otc_tracer *otc_tracer_load(const char *library, char *errbuf, int errbufsiz)
+{
+	std::unique_ptr<opentracing::DynamicTracingLibraryHandle> handle {
+		new opentracing::DynamicTracingLibraryHandle {}
+	};
+	std::shared_ptr<opentracing::Tracer>  tracer;
+	struct otc_tracer                    *retptr = nullptr;
+
+	if ((retptr = ot_tracer_new()) == nullptr) {
+		/* Do nothing. */;
+	}
+	else if (ot_tracer_load(library, errbuf, errbufsiz, *handle) == -1) {
+		retptr->destroy(&retptr);
+	}
+	else {
+		ot_dynlib = std::move(handle);
+	}
+
+	return retptr;
+}
+
+
+/***
+ * NAME
+ *   otc_tracer_start -
+ *
+ * ARGUMENTS
+ *   cfgfile   -
+ *   cfgbuf    -
+ *   errbuf    -
+ *   errbufsiz -
+ *
+ * DESCRIPTION
+ *   -
+ *
+ * RETURN VALUE
+ *   -
+ */
+int otc_tracer_start(const char *cfgfile, const char *cfgbuf, char *errbuf, int errbufsiz)
+{
+	std::shared_ptr<opentracing::Tracer>  tracer;
+	char                                 *config = OT_CAST_CONST(char *, cfgbuf);
+	int                                   retval = -1;
+
+	if (cfgfile != nullptr) {
+		config = otc_file_read(cfgfile, "#", errbuf, errbufsiz);
+		if (config == nullptr)
+			return retval;
+	}
+
+	if (ot_tracer_start(config, errbuf, errbufsiz, tracer) == -1) {
+		/* Do nothing. */;
+	} else {
+		ot_tracer = std::move(tracer);
+
+		(void)opentracing::Tracer::InitGlobal(ot_tracer);
+
+		retval = 0;
+	}
+
+	if (config != cfgbuf)
+		OT_FREE(config);
+
+	return retval;
+}
+
+
+/***
+ * NAME
  *   otc_tracer_init -
  *
  * ARGUMENTS
@@ -691,34 +811,11 @@ struct otc_tracer *ot_tracer_new(void)
  */
 struct otc_tracer *otc_tracer_init(const char *library, const char *cfgfile, const char *cfgbuf, char *errbuf, int errbufsiz)
 {
-	std::unique_ptr<opentracing::DynamicTracingLibraryHandle> handle {
-		new opentracing::DynamicTracingLibraryHandle {}
-	};
-	std::shared_ptr<opentracing::Tracer>  tracer;
-	struct otc_tracer            *retptr = nullptr;
-	char                                 *config = OT_CAST_CONST(char *, cfgbuf);
+	struct otc_tracer *retptr = nullptr;
 
-	if (cfgfile != nullptr) {
-		config = otc_file_read(cfgfile, "#", errbuf, errbufsiz);
-		if (config == nullptr)
-			return retptr;
-	}
-
-	if ((retptr = ot_tracer_new()) == nullptr) {
-		/* Do nothing. */;
-	}
-	else if (ot_tracer_load(library, config, errbuf, errbufsiz, *handle, tracer) == -1) {
-		retptr->destroy(&retptr);
-	}
-	else {
-		ot_dynlib = std::move(handle);
-		ot_tracer = std::move(tracer);
-
-		(void)opentracing::Tracer::InitGlobal(ot_tracer);
-	}
-
-	if (config != cfgbuf)
-		OT_FREE(config);
+	if ((retptr = otc_tracer_load(library, errbuf, errbufsiz)) != nullptr)
+		if (otc_tracer_start(cfgfile, cfgbuf, errbuf, errbufsiz) == -1)
+			retptr->destroy(&retptr);
 
 	return retptr;
 }

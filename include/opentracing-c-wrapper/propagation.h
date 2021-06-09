@@ -51,6 +51,12 @@ typedef enum {
 	 * unknown error
 	 */
 	otc_propagation_error_code_unknown = -6,
+
+	/***
+	 * tracer not initialized
+	 */
+	otc_propagation_error_code_invalid_tracer = -7,
+
 } otc_propagation_error_code_t;
 
 

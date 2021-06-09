@@ -1,6 +1,8 @@
 {
 global:
 	otc_tracer_init;
+	otc_tracer_load;
+	otc_tracer_start;
 	otc_tracer_global;
 	otc_tracer_init_global;
 	otc_text_map_new;

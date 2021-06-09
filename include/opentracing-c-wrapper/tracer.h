@@ -75,6 +75,8 @@ struct otc_tracer {
 
 
 struct otc_tracer *otc_tracer_init(const char *library, const char *cfgfile, const char *cfgbuf, char *errbuf, int errbufsiz);
+struct otc_tracer *otc_tracer_load(const char *library, char *errbuf, int errbufsiz);
+int                otc_tracer_start(const char *cfgfile, const char *cfgbuf, char *errbuf, int errbufsiz);
 void               otc_tracer_global(struct otc_tracer *tracer);
 void               otc_tracer_init_global(struct otc_tracer *tracer);
 

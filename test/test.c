@@ -453,8 +453,13 @@ int main(int argc, char **argv)
 	if (flag_error || (cfg.opt_flags & (FLAG_OPT_HELP | FLAG_OPT_VERSION)))
 		return flag_error ? EX_USAGE : EX_OK;
 
-	if (_NULL(cfg.ot_tracer = otc_tracer_init(cfg.ot_plugin, cfg.ot_config, NULL, ot_errbuf, sizeof(ot_errbuf)))) {
-		(void)fprintf(stderr, "ERROR: %s\n", (*ot_errbuf == '\0') ? "Unable to initialize tracing library" : ot_errbuf);
+	if (_NULL(cfg.ot_tracer = otc_tracer_load(cfg.ot_plugin, ot_errbuf, sizeof(ot_errbuf)))) {
+		(void)fprintf(stderr, "ERROR: %s\n", (*ot_errbuf == '\0') ? "Unable to load tracing library" : ot_errbuf);
+
+		retval = EX_SOFTWARE;
+	}
+	else if (otc_tracer_start(cfg.ot_config, NULL, ot_errbuf, sizeof(ot_errbuf)) == -1) {
+		(void)fprintf(stderr, "ERROR: %s\n", (*ot_errbuf == '\0') ? "Unable to start tracing" : ot_errbuf);
 
 		retval = EX_SOFTWARE;
 	}
