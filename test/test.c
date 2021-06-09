@@ -283,6 +283,8 @@ static int worker_run(void)
 
 	OT_FUNC("");
 
+	(void)pthread_setname_np(pthread_self(), "test/wrk: main");
+
 	for (i = 0; i < cfg.threads; i++) {
 		prg.worker[i].id = i + 1;
 
