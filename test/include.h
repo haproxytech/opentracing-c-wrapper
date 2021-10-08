@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <inttypes.h>
+#include <libgen.h>
 #include <pthread.h>
 #include <sysexits.h>
 #include <time.h>
