@@ -41,8 +41,8 @@ AC_DEFUN([AX_VARIABLES_SET], [
 dnl Check which options the C compiler supports.
 dnl
 AC_DEFUN([AX_PROG_CC_SET], [
-	typeset _var_cflags=
-	typeset _loop_cflags=
+	_var_cflags=
+	_loop_cflags=
 
 	AX_VARIABLES_STORE
 
@@ -115,8 +115,8 @@ AC_DEFUN([AX_PROG_CC_SET], [
 dnl Check which options the C++ compiler supports.
 dnl
 AC_DEFUN([AX_PROG_CXX_SET], [
-	typeset _var_cxxflags=
-	typeset _loop_cxxflags=
+	_var_cxxflags=
+	_loop_cxxflags=
 
 	AX_VARIABLES_STORE
 
@@ -318,7 +318,7 @@ AC_DEFUN([AX_ENABLE_GPROF], [
 AC_DEFUN([AX_VARIABLE_SET], [
 _am_cache_test ()
 {
-	typeset _c=
+	_c=
 
 	if test -n "${2}"; then
 		for _c in ${2}; do test "${_c}" = "${3}" && return 1; done
