@@ -91,6 +91,9 @@ AC_DEFUN([AX_PROG_CC_SET], [
 		  *solaris*)
 			_var_cflags="-xCC"
 			;;
+		  *freebsd1?.*)
+			_var_cflags=
+			;;
 		esac
 		;;
 	esac
@@ -175,6 +178,13 @@ AC_DEFUN([AX_PROG_CXX_SET], [
 		case "${host_os}" in
 		  *solaris*)
 			_var_cxxflags=
+			;;
+		esac
+		;;
+	  c++)
+		case "${host_os}" in
+		  *freebsd1?.*)
+			_var_cxxflags="-Wno-extern-c-compat"
 			;;
 		esac
 		;;
