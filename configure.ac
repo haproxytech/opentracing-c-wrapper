@@ -71,6 +71,7 @@ dnl
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_STRERROR_R
 AC_CHECK_FUNCS([clock_gettime gettimeofday memmove memset strchr strdup strndup])
+AC_CHECK_FUNCS([mallinfo])
 
 dnl Set the compiler flags
 dnl

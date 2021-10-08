@@ -543,7 +543,9 @@ void otc_dbg_mem_disable(void)
  */
 void otc_dbg_mem_info(void)
 {
+#ifdef HAVE_MALLINFO
 	struct mallinfo mi;
+#endif
 	size_t          i, n = 0;
 	uint64_t        size = 0;
 
@@ -567,6 +569,7 @@ void otc_dbg_mem_info(void)
 	if (dbg_mem->size != size)
 		DBG_MEM_INFO(0, "  size does not match: %zu != %zu", dbg_mem->size, size);
 
+#ifdef HAVE_MALLINFO
 	mi = mallinfo();
 	DBG_MEM_INFO(0, "--- Memory space usage ------------------------------");
 	DBG_MEM_INFO(0, "  Total non-mmapped bytes:     %" PRI_MI, mi.arena);
@@ -579,6 +582,7 @@ void otc_dbg_mem_info(void)
 	DBG_MEM_INFO(0, "  Total allocated space:       %" PRI_MI, mi.uordblks);
 	DBG_MEM_INFO(0, "  Total free space:            %" PRI_MI, mi.fordblks);
 	DBG_MEM_INFO(0, "  Topmost releasable block:    %" PRI_MI, mi.keepcost);
+#endif
 }
 
 
