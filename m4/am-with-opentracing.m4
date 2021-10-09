@@ -23,6 +23,8 @@ AC_DEFUN([AX_WITH_OPENTRACING], [
 			if test "${with_opentracing}" != "/usr"; then
 				if test "`uname`" = "Linux"; then
 					OPENTRACING_LDFLAGS="-L${with_opentracing}/lib -Wl,--rpath,${with_opentracing}/lib"
+				elif test "`uname`" = "FreeBSD"; then
+					OPENTRACING_LDFLAGS="-L${with_opentracing}/lib -Wl,-rpath ${with_opentracing}/lib"
 				else
 					OPENTRACING_LDFLAGS="-L${with_opentracing}/lib -R${with_opentracing}/lib"
 				fi
