@@ -159,7 +159,11 @@ static struct otc_span *ot_tracer_start_span_with_options(struct otc_tracer *tra
 		}
 
 		if (options->start_time_system.value.tv_sec > 0) {
+#ifdef __clang__
+			auto dt = timespec_to_duration_us(&(options->start_time_system.value));
+#else
 			auto dt = timespec_to_duration(&(options->start_time_system.value));
+#endif
 
 			span_options.start_system_timestamp = std::chrono::time_point<std::chrono::system_clock>(dt);
 		}

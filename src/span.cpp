@@ -64,7 +64,11 @@ static void ot_span_finish_with_options(struct otc_span *span, const struct otc_
 				struct opentracing::LogRecord record;
 
 				if (options->log_records[i].timestamp.value.tv_sec > 0) {
+#ifdef __clang__
+					auto dt = timespec_to_duration_us(&(options->log_records[i].timestamp.value));
+#else
 					auto dt = timespec_to_duration(&(options->log_records[i].timestamp.value));
+#endif
 
 					record.timestamp = std::chrono::time_point<std::chrono::system_clock>(dt);
 				}

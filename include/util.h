@@ -30,6 +30,7 @@ extern otc_ext_malloc_t otc_ext_malloc;
 extern otc_ext_free_t   otc_ext_free;
 
 
+std::chrono::microseconds timespec_to_duration_us(const struct timespec *ts);
 std::chrono::nanoseconds  timespec_to_duration(const struct timespec *ts);
 const char               *otc_strerror(int errnum);
 

@@ -22,6 +22,27 @@ otc_ext_free_t   otc_ext_free   = OT_IFDEF_DBG(otc_dbg_free,   free);
 
 /***
  * NAME
+ *   timespec_to_duration_us -
+ *
+ * ARGUMENTS
+ *   ts -
+ *
+ * DESCRIPTION
+ *   -
+ *
+ * RETURN VALUE
+ *   -
+ */
+std::chrono::microseconds timespec_to_duration_us(const struct timespec *ts)
+{
+	auto duration = std::chrono::seconds{ts->tv_sec} + std::chrono::microseconds{ts->tv_nsec / 1000};
+
+	return std::chrono::duration_cast<std::chrono::microseconds>(duration);
+}
+
+
+/***
+ * NAME
  *   timespec_to_duration -
  *
  * ARGUMENTS
