@@ -86,7 +86,7 @@ AC_DEFUN([AX_PROG_CC_SET], [
 				-Wformat-y2k"
 		fi
 		;;
-	  cc)
+	  cc|clang)
 		case "${host_os}" in
 		  *solaris*)
 			_var_cflags="-xCC"
@@ -181,7 +181,7 @@ AC_DEFUN([AX_PROG_CXX_SET], [
 			;;
 		esac
 		;;
-	  c++)
+	  c++|clang)
 		case "${host_os}" in
 		  *freebsd1?.*)
 			_var_cxxflags="-Wno-extern-c-compat"
