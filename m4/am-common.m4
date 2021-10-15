@@ -124,6 +124,13 @@ AC_DEFUN([AX_PROG_CXX_SET], [
 	AX_VARIABLES_STORE
 
 	case "${CXX}" in
+	  c++|clang++)
+		case "${host_os}" in
+		  *freebsd1?.*)
+			_var_cxxflags="-Wno-extern-c-compat"
+			;;
+		esac
+		;;
 	  *g++*)
 		_var_cxxflags="\
 			-Wall \
@@ -178,13 +185,6 @@ AC_DEFUN([AX_PROG_CXX_SET], [
 		case "${host_os}" in
 		  *solaris*)
 			_var_cxxflags=
-			;;
-		esac
-		;;
-	  c++|clang)
-		case "${host_os}" in
-		  *freebsd1?.*)
-			_var_cxxflags="-Wno-extern-c-compat"
 			;;
 		esac
 		;;
