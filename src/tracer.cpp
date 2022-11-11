@@ -734,8 +734,7 @@ struct otc_tracer *otc_tracer_load(const char *library, char *errbuf, int errbuf
 	std::unique_ptr<opentracing::DynamicTracingLibraryHandle> handle {
 		new opentracing::DynamicTracingLibraryHandle {}
 	};
-	std::shared_ptr<opentracing::Tracer>  tracer;
-	struct otc_tracer                    *retptr = nullptr;
+	struct otc_tracer *retptr = nullptr;
 
 	if ((retptr = ot_tracer_new()) == nullptr) {
 		/* Do nothing. */;
