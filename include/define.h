@@ -49,14 +49,6 @@
 #define OT_CAST_REINTERPRET(t,e)    reinterpret_cast<t>(e)
 #define OT_CAST_TYPEOF(t,e)         OT_CAST_REINTERPRET(typeof(t), (e))
 
-#ifdef __cplusplus
-#  define __CPLUSPLUS_DECL_BEGIN    extern "C" {
-#  define __CPLUSPLUS_DECL_END      }
-#else
-#  define __CPLUSPLUS_DECL_BEGIN
-#  define __CPLUSPLUS_DECL_END
-#endif
-
 #endif /* _OPENTRACING_C_WRAPPER_DEFINE_H_ */
 
 /*
