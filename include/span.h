@@ -21,7 +21,7 @@
 
 class otc_hash {
 	public:
-	size_t operator() (int64_t key) const { return key; }
+	size_t operator() (int64_t key) const noexcept(true) { return key; }
 };
 
 
