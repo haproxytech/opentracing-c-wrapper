@@ -38,6 +38,7 @@ static struct {
 	struct otc_tracer *ot_tracer;
 } cfg = {
 	.debug_level = DEFAULT_DEBUG_LEVEL,
+	.runcount    = -1,
 	.runtime_ms  = -1,
 	.threads     = DEFAULT_THREADS_COUNT,
 };
@@ -337,7 +338,7 @@ static void usage(const char *program_name, bool_t flag_verbose)
 {
 	(void)printf("\nUsage: %s { -h --help }\n", program_name);
 	(void)printf("       %s { -V --version }\n", program_name);
-	(void)printf("       %s { [ -R --runcount=VALUE ] | [ -r --runtime=TIME ] } [OPTION]...\n\n", program_name);
+	(void)printf("       %s { -c --config=FILE } { -p --plugin=FILE } { [ -R --runcount=VALUE ] | [ -r --runtime=TIME ] } [OPTION]...\n\n", program_name);
 
 	if (flag_verbose) {
 		(void)printf("Options are:\n");
@@ -445,8 +446,6 @@ int main(int argc, char **argv)
 		if (flag_error)
 			usage(prg.name, 0);
 	}
-
-	cfg_debug_level = &(cfg.debug_level);
 
 	OT_FUNC("%d, %p", argc, argv);
 

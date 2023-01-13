@@ -136,7 +136,7 @@ static struct otc_span *ot_tracer_start_span_with_options(struct otc_tracer *tra
 {
 	OT_LOCK_GUARD(span);
 	std::unique_ptr<opentracing::Span>  span_maybe = nullptr;
-	struct otc_span            *retptr = nullptr;
+	struct otc_span                    *retptr = nullptr;
 
 	if (ot_tracer == nullptr)
 		return retptr;

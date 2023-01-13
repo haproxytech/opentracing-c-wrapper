@@ -432,7 +432,7 @@ struct otc_span *ot_span_new(void)
 		.tracer              = ot_span_tracer,              /* NOT IMPLEMENTED */
 		.destroy             = ot_span_destroy              /* lock span */
 	};
-	int64_t                  idx = ot_span.key++;
+	int64_t          idx = ot_span.key++;
 	struct otc_span *retptr;
 
 	if (idx == 0) {
@@ -516,7 +516,7 @@ static void ot_span_context_destroy(struct otc_span_context **context)
  */
 struct otc_span_context *ot_span_context_new(const struct otc_span *span)
 {
-	int64_t                          idx = ot_span_context.key++;
+	int64_t                  idx = ot_span_context.key++;
 	struct otc_span_context *retptr;
 
 	if (idx == 0) {
