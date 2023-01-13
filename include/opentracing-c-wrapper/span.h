@@ -55,12 +55,12 @@ struct otc_log_record {
 
 typedef enum {
 	/***
-	 * parent span that created and also depends on the child span
+	 * refers to the parent span that caused it and somehow depends on the new child span
 	 */
 	otc_span_reference_child_of = 1,
 
 	/***
-	 * parent span that doesn't dpeend on the child span
+	 * parent span that doesn't depend in any way on the result of the new child span
 	 *
 	 * more details in http://opentracing.io/spec/
 	 */
@@ -84,7 +84,7 @@ struct otc_finish_span_options {
 	const struct otc_log_record *log_records;
 
 	/***
-	 * number of log records, must be set to zero if fields is NULL
+	 * number of log records, must be set to zero if log_records is NULL
 	 */
 	int num_log_records;
 };
